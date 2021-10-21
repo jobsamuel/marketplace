@@ -6,6 +6,14 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Marketplace is IERC721Receiver, ReentrancyGuard {
+    uint256 public itemsforSale = 0;
+    uint256 public totalSales = 0;
+
+    struct Token {
+        address tokenAddress;
+        uint256 tokenId;
+    }
+
     struct Item {
         address seller;
         address owner;
@@ -17,7 +25,9 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         uint256 price;
     }
 
-    mapping(address => mapping(uint256 => Item)) private assets;
+    Token[] private assets;
+
+    mapping(address => mapping(uint256 => Item)) private items;
     mapping(address => mapping(uint256 => Sell[])) private history;
 
     event AddedToMarket(
@@ -40,15 +50,23 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         uint256 _tokenId,
         uint256 _price
     ) external nonReentrant returns (bool) {
-        require(_price >= 0.01 ether, "NFT price too low.");
+        require(_price >= 0.01 ether, "Too low price.");
 
-        Item memory nft = Item({
+        Item memory item = Item({
             seller: msg.sender,
             owner: address(0),
             price: _price
         });
 
-        assets[_tokenAddress][_tokenId] = nft;
+        Token memory nft = Token({
+            tokenAddress: _tokenAddress,
+            tokenId: _tokenId
+        });
+
+        items[_tokenAddress][_tokenId] = item;
+        assets.push(nft);
+
+        itemsforSale += 1;
 
         IERC721(_tokenAddress).safeTransferFrom(
             msg.sender,
@@ -73,15 +91,15 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         nonReentrant
         returns (bool)
     {
-        Item memory nft = assets[_tokenAddress][_tokenId];
+        Item memory nft = items[_tokenAddress][_tokenId];
 
-        require(nft.price == msg.value, "Price not met.");
+        require(nft.price == msg.value, "Offer cannot be accepted.");
 
         (bool success, ) = nft.seller.call{value: msg.value}("");
 
         require(success, "Transaction failed.");
 
-        assets[_tokenAddress][_tokenId] = Item({
+        items[_tokenAddress][_tokenId] = Item({
             seller: address(0),
             owner: msg.sender,
             price: 0
@@ -90,6 +108,9 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         history[_tokenAddress][_tokenId].push(
             Sell({buyer: msg.sender, price: nft.price})
         );
+
+        totalSales += 1;
+        itemsforSale -= 1;
 
         IERC721(_tokenAddress).safeTransferFrom(
             address(this),
@@ -106,6 +127,53 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         );
 
         return true;
+    }
+
+    function getItem(address _tokenAddress, uint256 _tokenId)
+        external
+        view
+        returns (
+            address seller,
+            address owner,
+            uint256 price
+        )
+    {
+        Item memory nft = items[_tokenAddress][_tokenId];
+
+        return (nft.seller, nft.owner, nft.price);
+    }
+
+    function isForSale(address _tokenAddress, uint256 _tokenId)
+        external
+        view
+        returns (bool)
+    {
+        Item memory nft = items[_tokenAddress][_tokenId];
+
+        return nft.seller != address(0);
+    }
+
+    function getAssetsForSale() external view returns (Token[] memory) {
+        Token[] memory list = new Token[](itemsforSale);
+
+        uint256 limit = assets.length;
+        uint256 count = 0;
+
+        if (limit > 10) {
+            limit = 10;
+        }
+
+        for (uint256 index = 0; index < limit; index++) {
+            Token memory nft = assets[index];
+            address seller = items[nft.tokenAddress][nft.tokenId].seller;
+
+            if (seller != address(0)) {
+                list[count] = nft;
+                count += 1;
+            }
+        }
+
+        return list;
     }
 
     function onERC721Received(
