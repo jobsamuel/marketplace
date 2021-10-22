@@ -172,11 +172,9 @@ describe('Marketplace', function () {
     const n1 = 4
 
     for (let index = 0; index < n1; index++) {
-      await market
-        .connect(signers[1])
-        .buyNFT(tokenAddress, index + 2, {
-          value: ethers.utils.parseEther('0.01'),
-        })
+      await market.connect(signers[1]).buyNFT(tokenAddress, index + 2, {
+        value: ethers.utils.parseEther('0.01'),
+      })
     }
 
     const data1 = await market.getAssetsForSale()

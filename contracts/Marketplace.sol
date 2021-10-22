@@ -154,7 +154,7 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
     }
 
     function getAssetsForSale() external view returns (Token[] memory) {
-        uint256 limit = 9;
+        uint256 limit = 20;
         uint256 count = 0;
 
         if (limit > itemsForSale) {
