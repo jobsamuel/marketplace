@@ -153,12 +153,11 @@ describe('Marketplace', function () {
     await nft.deployed()
 
     const tokenAddress = nft.address
+    const totalAssets = 15
 
-    await nft.createNFT('demo.marketplace.0')
-    await nft.createNFT('demo.marketplace.1')
-    await nft.createNFT('demo.marketplace.2')
-    await nft.createNFT('demo.marketplace.3')
-    await nft.createNFT('demo.marketplace.4')
+    for (let index = 0; index < totalAssets; index++) {
+      await nft.createNFT('demo.marketplace.' + index)
+    }
 
     const Marketplace = await ethers.getContractFactory('Marketplace')
     const market = await Marketplace.deploy()
@@ -166,18 +165,22 @@ describe('Marketplace', function () {
 
     await nft.setApprovalForAll(market.address, true)
 
-    await market.sellNFT(tokenAddress, 0, ethers.utils.parseEther('0.01'))
-    await market.sellNFT(tokenAddress, 1, ethers.utils.parseEther('0.01'))
-    await market.sellNFT(tokenAddress, 2, ethers.utils.parseEther('0.01'))
-    await market.sellNFT(tokenAddress, 3, ethers.utils.parseEther('0.01'))
-    await market.sellNFT(tokenAddress, 4, ethers.utils.parseEther('0.01'))
+    for (let index = 0; index < totalAssets; index++) {
+      await market.sellNFT(tokenAddress, index, ethers.utils.parseEther('0.01'))
+    }
 
-    await market
-      .connect(signers[1])
-      .buyNFT(tokenAddress, 2, { value: ethers.utils.parseEther('0.01') })
+    const n1 = 4
 
-    const list = await market.getAssetsForSale()
+    for (let index = 0; index < n1; index++) {
+      await market
+        .connect(signers[1])
+        .buyNFT(tokenAddress, index + 2, {
+          value: ethers.utils.parseEther('0.01'),
+        })
+    }
 
-    expect(list.length).to.equal(4)
+    const data1 = await market.getAssetsForSale()
+
+    expect(data1.length).to.equal(9)
   })
 })

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Marketplace is IERC721Receiver, ReentrancyGuard {
-    uint256 public itemsforSale = 0;
+    uint256 public itemsForSale = 0;
     uint256 public totalSales = 0;
 
     struct Token {
@@ -66,7 +66,7 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         items[_tokenAddress][_tokenId] = item;
         assets.push(nft);
 
-        itemsforSale += 1;
+        itemsForSale += 1;
 
         IERC721(_tokenAddress).safeTransferFrom(
             msg.sender,
@@ -110,7 +110,7 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         );
 
         totalSales += 1;
-        itemsforSale -= 1;
+        itemsForSale -= 1;
 
         IERC721(_tokenAddress).safeTransferFrom(
             address(this),
@@ -154,16 +154,16 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
     }
 
     function getAssetsForSale() external view returns (Token[] memory) {
-        Token[] memory list = new Token[](itemsforSale);
-
-        uint256 limit = assets.length;
+        uint256 limit = 9;
         uint256 count = 0;
 
-        if (limit > 10) {
-            limit = 10;
+        if (limit > itemsForSale) {
+            limit = itemsForSale;
         }
 
-        for (uint256 index = 0; index < limit; index++) {
+        Token[] memory list = new Token[](limit);
+
+        for (uint256 index = 0; count < limit; index++) {
             Token memory nft = assets[index];
             address seller = items[nft.tokenAddress][nft.tokenId].seller;
 
