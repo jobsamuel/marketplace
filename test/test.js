@@ -212,4 +212,65 @@ describe('Marketplace', function () {
     expect(tokenIdListFromSecondBatch[2]).to.equal(8)
     expect(tokenIdListFromSecondBatch[3]).to.equal(9)
   })
+
+  it('Should query all items by batches', async function () {
+    const signers = await ethers.getSigners()
+    const NFT = await ethers.getContractFactory('NFT')
+    const nft = await NFT.deploy('Marketplace NFT', 'MK')
+    await nft.deployed()
+
+    const tokenAddress = nft.address
+    const totalAssets = 50
+
+    for (let index = 0; index < totalAssets; index++) {
+      await nft.createNFT('demo.marketplace.' + index)
+    }
+
+    const Marketplace = await ethers.getContractFactory('Marketplace')
+    const market = await Marketplace.deploy()
+    await market.deployed()
+
+    await nft.setApprovalForAll(market.address, true)
+
+    for (let index = 0; index < totalAssets; index++) {
+      await market.sellNFT(tokenAddress, index, ethers.utils.parseEther('0.01'))
+    }
+
+    const n1 = 8
+
+    for (let index = 0; index < n1; index++) {
+      await market.connect(signers[1]).buyNFT(tokenAddress, index * 2, {
+        value: ethers.utils.parseEther('0.01'),
+      })
+    }
+
+    const batch1 = await market.getAssetsForSale(0, 10)
+    expect(batch1.length).to.equal(10)
+
+    const batch2 = await market.getAssetsForSale(10, 10)
+    expect(batch2.length).to.equal(10)
+
+    const batch3 = await market.getAssetsForSale(20, 10)
+    expect(batch3.length).to.equal(10)
+    expect(ethers.BigNumber.from(batch3[9].tokenId).toNumber()).to.equal(29)
+
+    const batch4 = await market.getAssetsForSale(30, 10)
+    expect(batch4.length).to.equal(10)
+    expect(ethers.BigNumber.from(batch4[9].tokenId).toNumber()).to.equal(39)
+
+    const batch5 = await market.getAssetsForSale(40, 10)
+    expect(batch5.length).to.equal(10)
+    expect(ethers.BigNumber.from(batch5[9].tokenId).toNumber()).to.equal(49)
+
+    const batch6 = await market.getAssetsForSale(23, 5)
+    expect(batch6.length).to.equal(5)
+    expect(ethers.BigNumber.from(batch6[0].tokenId).toNumber()).to.equal(23)
+    expect(ethers.BigNumber.from(batch6[4].tokenId).toNumber()).to.equal(27)
+
+    const batch7 = await market.getAssetsForSale(50, 5)
+    expect(batch7.length).to.equal(0)
+
+    const batch8 = await market.getAssetsForSale(46, 10)
+    expect(batch8.length).to.equal(4)
+  })
 })

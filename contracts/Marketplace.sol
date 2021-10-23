@@ -192,6 +192,36 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         return list;
     }
 
+    function getAllAssets(uint256 _cursor, uint256 _batchSize)
+        external
+        view
+        returns (Token[] memory)
+    {
+        if (_cursor >= assets.length) {
+            return new Token[](0);
+        }
+
+        uint256 count = 0;
+        uint256 limit = _batchSize;
+
+        if (limit > 10) {
+            limit = 10;
+        }
+
+        if (limit > assets.length - _cursor) {
+            limit = assets.length - _cursor;
+        }
+
+        Token[] memory list = new Token[](limit);
+
+        for (uint256 index = _cursor; index < limit + _cursor; index++) {
+            list[count] = assets[index];
+            count += 1;
+        }
+
+        return list;
+    }
+
     function onERC721Received(
         address,
         address,
