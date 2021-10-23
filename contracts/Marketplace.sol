@@ -132,15 +132,9 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
     function getItem(address _tokenAddress, uint256 _tokenId)
         external
         view
-        returns (
-            address seller,
-            address owner,
-            uint256 price
-        )
+        returns (Item memory)
     {
-        Item memory nft = items[_tokenAddress][_tokenId];
-
-        return (nft.seller, nft.owner, nft.price);
+        return items[_tokenAddress][_tokenId];
     }
 
     function isForSale(address _tokenAddress, uint256 _tokenId)
