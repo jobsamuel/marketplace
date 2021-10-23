@@ -146,7 +146,7 @@ describe('Marketplace', function () {
     expect(data3).to.be.false
   })
 
-  it('Should get assets for sale list', async function () {
+  it('Should get batches of assets for sale', async function () {
     const signers = await ethers.getSigners()
     const NFT = await ethers.getContractFactory('NFT')
     const nft = await NFT.deploy('Marketplace NFT', 'MK')
@@ -177,8 +177,39 @@ describe('Marketplace', function () {
       })
     }
 
-    const data1 = await market.getAssetsForSale()
+    const batch1 = await market.getAssetsForSale(0, 9)
+    const tokenIdListFromFirstBatch = batch1.map(token => {
+      return ethers.BigNumber.from(token.tokenId).toNumber()
+    })
 
-    expect(data1.length).to.equal(9)
+    expect(batch1.length).to.equal(9)
+
+    expect(tokenIdListFromFirstBatch[0]).to.equal(0)
+    expect(tokenIdListFromFirstBatch[1]).to.equal(1)
+    expect(tokenIdListFromFirstBatch[2]).to.equal(6)
+    expect(tokenIdListFromFirstBatch[3]).to.equal(7)
+    expect(tokenIdListFromFirstBatch[4]).to.equal(8)
+    expect(tokenIdListFromFirstBatch[5]).to.equal(9)
+    expect(tokenIdListFromFirstBatch[6]).to.equal(10)
+    expect(tokenIdListFromFirstBatch[7]).to.equal(11)
+    expect(tokenIdListFromFirstBatch[8]).to.equal(12)
+
+    const batch2 = await market.getAssetsForSale(
+      tokenIdListFromFirstBatch[8],
+      9
+    )
+    expect(batch2.length).to.equal(3)
+
+    const batch3 = await market.getAssetsForSale(2, 4)
+    const tokenIdListFromSecondBatch = batch3.map(token => {
+      return ethers.BigNumber.from(token.tokenId).toNumber()
+    })
+
+    expect(batch3.length).to.equal(4)
+
+    expect(tokenIdListFromSecondBatch[0]).to.equal(6)
+    expect(tokenIdListFromSecondBatch[1]).to.equal(7)
+    expect(tokenIdListFromSecondBatch[2]).to.equal(8)
+    expect(tokenIdListFromSecondBatch[3]).to.equal(9)
   })
 })

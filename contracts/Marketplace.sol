@@ -153,17 +153,33 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         return nft.seller != address(0);
     }
 
-    function getAssetsForSale() external view returns (Token[] memory) {
-        uint256 limit = 20;
-        uint256 count = 0;
+    function getAssetsForSale(uint256 _cursor, uint256 _batchSize)
+        external
+        view
+        returns (Token[] memory)
+    {
+        if (_cursor >= assets.length) {
+            return new Token[](0);
+        }
 
-        if (limit > itemsForSale) {
-            limit = itemsForSale;
+        uint256 count = 0;
+        uint256 limit = _batchSize;
+
+        if (limit > 10) {
+            limit = 10;
+        }
+
+        if (limit > assets.length - _cursor) {
+            limit = assets.length - _cursor;
         }
 
         Token[] memory list = new Token[](limit);
 
-        for (uint256 index = 0; count < limit; index++) {
+        for (uint256 index = _cursor; count < limit; index++) {
+            if (index >= assets.length) {
+                break;
+            }
+
             Token memory nft = assets[index];
             address seller = items[nft.tokenAddress][nft.tokenId].seller;
 
