@@ -131,19 +131,14 @@ describe('Marketplace', function () {
 
     await market.sellNFT(tokenAddress, 0, ethers.utils.parseEther('0.01'))
 
-    const data1 = await market.isForSale(tokenAddress, 0)
-
-    expect(data1).to.be.true
+    expect(await market.isForSale(tokenAddress, 0)).to.equal(true)
 
     await market
       .connect(signers[1])
       .buyNFT(tokenAddress, 0, { value: ethers.utils.parseEther('0.01') })
 
-    const data2 = await market.isForSale(tokenAddress, 0)
-    expect(data2).to.be.false
-
-    const data3 = await market.isForSale(tokenAddress, 1)
-    expect(data3).to.be.false
+    expect(await market.isForSale(tokenAddress, 0)).to.equal(false)
+    expect(await market.isForSale(tokenAddress, 1)).to.equal(false)
   })
 
   it('Should get batches of assets for sale', async function () {
