@@ -14,12 +14,11 @@ $ npm install
 $ npx hardhat test
 ```
 
-<!--
 ## deployed contract address
 
-Binance Testnet ([view contract](https://testnet.bscscan.com/address/TODO))
+Binance Testnet ([view contract](https://testnet.bscscan.com/address/0xE63CE33A886859942C42e367a77207366819f4Ff))
 
-`TODO` -->
+`0xE63CE33A886859942C42e367a77207366819f4Ff`
 
 ## license
 
