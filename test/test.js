@@ -141,7 +141,7 @@ describe('Marketplace', function () {
     expect(await market.isForSale(tokenAddress, 1)).to.equal(false)
   })
 
-  it('Should get batches of assets for sale', async function () {
+  it('Should get batches of NFTs for sale', async function () {
     const signers = await ethers.getSigners()
     const NFT = await ethers.getContractFactory('NFT')
     const nft = await NFT.deploy('Marketplace NFT', 'MK')
@@ -267,5 +267,48 @@ describe('Marketplace', function () {
 
     const batch8 = await market.getAssetsForSale(46, 10)
     expect(batch8.length).to.equal(4)
+  })
+
+  it('Should get NFT count in marketplace', async function () {
+    const signers = await ethers.getSigners()
+    const NFT = await ethers.getContractFactory('NFT')
+    const nft = await NFT.deploy('Marketplace NFT', 'MK')
+    await nft.deployed()
+
+    const tokenAddress = nft.address
+    const totalAssets = 5
+
+    for (let index = 0; index < totalAssets; index++) {
+      await nft.createNFT('demo.marketplace.' + index)
+    }
+
+    const Marketplace = await ethers.getContractFactory('Marketplace')
+    const market = await Marketplace.deploy()
+    await market.deployed()
+
+    await nft.setApprovalForAll(market.address, true)
+
+    for (let index = 0; index < totalAssets; index++) {
+      await market.sellNFT(tokenAddress, index, ethers.utils.parseEther('0.01'))
+    }
+
+    await market.connect(signers[1]).buyNFT(tokenAddress, 2, {
+      value: ethers.utils.parseEther('0.01'),
+    })
+
+    await nft.connect(signers[1]).setApprovalForAll(market.address, true)
+
+    for (let index = 0; index < totalAssets; index++) {
+      await market
+        .connect(signers[1])
+        .sellNFT(tokenAddress, 2, ethers.utils.parseEther('0.01'))
+
+      await market.connect(signers[1]).buyNFT(tokenAddress, 2, {
+        value: ethers.utils.parseEther('0.01'),
+      })
+    }
+
+    const batch = await market.getAllAssets(0, 9)
+    expect(batch.length).to.equal(5)
   })
 })

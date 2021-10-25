@@ -27,6 +27,7 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
 
     Token[] private assets;
 
+    mapping(address => mapping(uint256 => bool)) private resell;
     mapping(address => mapping(uint256 => Item)) private items;
     mapping(address => mapping(uint256 => Sell[])) private history;
 
@@ -58,13 +59,17 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
             price: _price
         });
 
-        Token memory nft = Token({
-            tokenAddress: _tokenAddress,
-            tokenId: _tokenId
-        });
-
         items[_tokenAddress][_tokenId] = item;
-        assets.push(nft);
+
+        if (!resell[_tokenAddress][_tokenId]) {
+            Token memory nft = Token({
+                tokenAddress: _tokenAddress,
+                tokenId: _tokenId
+            });
+
+            assets.push(nft);
+            resell[_tokenAddress][_tokenId] = true;
+        }
 
         itemsForSale += 1;
 
