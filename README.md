@@ -2,7 +2,7 @@
 
 > A simple NFT marketplace contract.
 
-<!-- #### [Live demo](https://jobsa.co/marketplace) -->
+#### [Live demo](https://jobsa.co/marketplace)
 
 ## usage
 
@@ -16,9 +16,9 @@ $ npx hardhat test
 
 ## deployed contract address
 
-Binance Testnet ([view contract](https://testnet.bscscan.com/address/0xE63CE33A886859942C42e367a77207366819f4Ff))
+Binance Testnet ([view contract](https://testnet.bscscan.com/address/0xB185Cb55A88289Eb40eac86f60fa2eD7428ed673))
 
-`0xE63CE33A886859942C42e367a77207366819f4Ff`
+`0xB185Cb55A88289Eb40eac86f60fa2eD7428ed673`
 
 ## license
 
