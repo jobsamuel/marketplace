@@ -141,6 +141,50 @@ describe('Marketplace', function () {
     expect(await market.isForSale(tokenAddress, 1)).to.equal(false)
   })
 
+  it('Should get only NFTs for sale', async function () {
+    const signers = await ethers.getSigners()
+    const NFT = await ethers.getContractFactory('NFT')
+    const nft = await NFT.deploy('Marketplace NFT', 'MK')
+    await nft.deployed()
+
+    const tokenAddress = nft.address
+    const totalAssets = 5
+
+    for (let index = 0; index < totalAssets; index++) {
+      await nft.createNFT('demo.marketplace.' + index)
+    }
+
+    const Marketplace = await ethers.getContractFactory('Marketplace')
+    const market = await Marketplace.deploy()
+    await market.deployed()
+
+    await nft.setApprovalForAll(market.address, true)
+
+    for (let index = 0; index < totalAssets; index++) {
+      await market.sellNFT(tokenAddress, index, ethers.utils.parseEther('0.01'))
+    }
+
+    const n1 = 2
+
+    for (let index = 0; index < n1; index++) {
+      await market.connect(signers[1]).buyNFT(tokenAddress, index + 2, {
+        value: ethers.utils.parseEther('0.01'),
+      })
+    }
+
+    const data = await market.getAssetsForSale(0, 9)
+
+    const tokenIdList = data.map(token => {
+      return ethers.BigNumber.from(token.tokenId).toNumber()
+    })
+
+    expect(data.length).to.equal(3)
+
+    expect(tokenIdList[0]).to.equal(0)
+    expect(tokenIdList[1]).to.equal(1)
+    expect(tokenIdList[2]).to.equal(4)
+  })
+
   it('Should get batches of NFTs for sale', async function () {
     const signers = await ethers.getSigners()
     const NFT = await ethers.getContractFactory('NFT')

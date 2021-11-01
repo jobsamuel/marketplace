@@ -161,7 +161,7 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
             return new Token[](0);
         }
 
-        uint256 count = 0;
+        uint256 size = 0;
         uint256 limit = _batchSize;
 
         if (limit > 10) {
@@ -172,8 +172,24 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
             limit = assets.length - _cursor;
         }
 
-        Token[] memory list = new Token[](limit);
+        // Get response Array size.
+        for (uint256 index = _cursor; size < limit; index++) {
+            if (index >= assets.length) {
+                break;
+            }
 
+            Token memory nft = assets[index];
+            address seller = items[nft.tokenAddress][nft.tokenId].seller;
+
+            if (seller != address(0)) {
+                size += 1;
+            }
+        }
+
+        uint256 count = 0;
+        Token[] memory list = new Token[](size);
+
+        // Create response Array.
         for (uint256 index = _cursor; count < limit; index++) {
             if (index >= assets.length) {
                 break;
