@@ -100,10 +100,6 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
 
         require(nft.price == msg.value, "Offer cannot be accepted.");
 
-        (bool success, ) = nft.seller.call{value: msg.value}("");
-
-        require(success, "Transaction failed.");
-
         items[_tokenAddress][_tokenId] = Item({
             seller: address(0),
             owner: msg.sender,
@@ -116,6 +112,10 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
 
         totalSales += 1;
         itemsForSale -= 1;
+
+        (bool success, ) = nft.seller.call{value: msg.value}("");
+
+        require(success, "Transaction failed.");
 
         IERC721(_tokenAddress).safeTransferFrom(
             address(this),

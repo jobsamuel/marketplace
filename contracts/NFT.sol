@@ -17,9 +17,9 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage {
 
     function createNFT(string memory uri) external {
         uint256 newId = counter;
+        counter += 1;
         _safeMint(msg.sender, newId);
         _setTokenURI(newId, uri);
-        counter += 1;
     }
 
     function _beforeTokenTransfer(
