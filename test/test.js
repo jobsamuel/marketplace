@@ -1,5 +1,5 @@
 const { expect } = require('chai')
-const { ethers } = require('hardhat')
+const { ethers, upgrades } = require('hardhat')
 
 describe('Marketplace', function () {
   it('Should handle single item sell', async function () {
@@ -354,5 +354,21 @@ describe('Marketplace', function () {
 
     const batch = await market.getAllAssets(0, 9)
     expect(batch.length).to.equal(5)
+  })
+})
+
+describe('Upgradable contract', function () {
+  it('Should be upgradable', async () => {
+    const MarketplaceV1 = await ethers.getContractFactory('Marketplace')
+    const MarketplaceV2 = await ethers.getContractFactory('MarketplaceV2')
+
+    const instance = await upgrades.deployProxy(MarketplaceV1)
+
+    const upgraded = await upgrades.upgradeProxy(
+      instance.address,
+      MarketplaceV2
+    )
+
+    expect(await upgraded.simpleUpgradeTest()).to.equal('Upgraded!')
   })
 })

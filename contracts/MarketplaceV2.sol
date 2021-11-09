@@ -274,7 +274,7 @@ abstract contract ReentrancyGuard is Initializable {
     }
 }
 
-contract Marketplace is IERC721Receiver, ReentrancyGuard {
+contract MarketplaceV2 is IERC721Receiver, ReentrancyGuard {
     uint256 public itemsForSale;
     uint256 public totalSales;
 
@@ -314,11 +314,6 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         uint256 tokenId,
         uint256 price
     );
-
-    function initialize() public override initializer {
-        itemsForSale = 0;
-        totalSales = 0;
-    }
 
     function sellNFT(
         address _tokenAddress,
@@ -509,6 +504,10 @@ contract Marketplace is IERC721Receiver, ReentrancyGuard {
         }
 
         return list;
+    }
+
+    function simpleUpgradeTest() external pure returns (string memory) {
+        return "Upgraded!";
     }
 
     function onERC721Received(
